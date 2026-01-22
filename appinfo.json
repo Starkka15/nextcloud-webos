@@ -1,0 +1,10 @@
+{
+    "id": "org.webos.nextcloud",
+    "version": "0.2.0",
+    "vendor": "webOS Community",
+    "type": "pdk",
+    "main": "nextcloud-webos",
+    "title": "Nextcloud",
+    "icon": "icon.png",
+    "requiredMemory": 32
+}
