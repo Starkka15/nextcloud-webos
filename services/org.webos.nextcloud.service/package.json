@@ -1,0 +1,9 @@
+{
+    "name": "nextcloud-sync-service",
+    "version": "1.0.0",
+    "description": "Background sync service for Nextcloud on webOS",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js"
+    }
+}

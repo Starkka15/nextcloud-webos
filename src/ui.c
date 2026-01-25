@@ -179,6 +179,10 @@ static void render_browser(UIState *ui) {
     }
     draw_text(ui->screen, ui->font, display_path, 10, 18, COLOR_TEXT);
 
+    // Sync button
+    draw_rect(ui->screen, SCREEN_WIDTH - 320, 10, 80, 40, 0x4CAF50FF);
+    draw_text(ui->screen, ui->font_small, "Sync", SCREEN_WIDTH - 305, 20, COLOR_TEXT);
+
     // Upload button
     draw_rect(ui->screen, SCREEN_WIDTH - 220, 10, 80, 40, COLOR_ITEM_SEL);
     draw_text(ui->screen, ui->font_small, "Upload", SCREEN_WIDTH - 210, 20, COLOR_TEXT);
@@ -293,6 +297,100 @@ static void render_error(UIState *ui) {
     draw_text_centered(ui->screen, ui->font_small, "Tap to go back", SCREEN_HEIGHT / 2 + 50, COLOR_TEXT_DIM);
 }
 
+static void render_sync(UIState *ui) {
+    // Background
+    draw_rect(ui->screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_BG);
+
+    // Header
+    draw_rect(ui->screen, 0, 0, SCREEN_WIDTH, HEADER_HEIGHT, COLOR_HEADER);
+    draw_text(ui->screen, ui->font, "Sync Settings", 10, 18, COLOR_TEXT);
+
+    // Back button
+    draw_rect(ui->screen, SCREEN_WIDTH - 120, 10, 100, 40, COLOR_ITEM_BG);
+    draw_text(ui->screen, ui->font_small, "Back", SCREEN_WIDTH - 100, 20, COLOR_TEXT);
+
+    int y = HEADER_HEIGHT + 20;
+    int field_x = 20;
+    int field_w = SCREEN_WIDTH - 40;
+
+    // Service status
+    const char *status_text = ui->sync_service_available ?
+        (ui->sync_status.running ? "Sync: RUNNING" : "Sync: STOPPED") :
+        "Sync Service: NOT AVAILABLE";
+    Uint32 status_color = ui->sync_status.running ? 0x4CAF50FF : COLOR_TEXT_DIM;
+    draw_text(ui->screen, ui->font, status_text, field_x, y, status_color);
+    y += 40;
+
+    // Stats (if service available)
+    if (ui->sync_service_available) {
+        char stats[128];
+        snprintf(stats, sizeof(stats), "Files: %d synced, %d pending, %d errors",
+                 ui->sync_status.synced_files,
+                 ui->sync_status.pending_files,
+                 ui->sync_status.error_files);
+        draw_text(ui->screen, ui->font_small, stats, field_x, y, COLOR_TEXT_DIM);
+        y += 30;
+
+        // Current upload
+        if (ui->sync_status.current_upload[0]) {
+            char uploading[256];
+            snprintf(uploading, sizeof(uploading), "Uploading: %s", ui->sync_status.current_upload);
+            draw_text(ui->screen, ui->font_small, uploading, field_x, y, COLOR_FOLDER);
+        }
+        y += 40;
+    }
+
+    // Watch folder field
+    draw_text(ui->screen, ui->font_small, "Watch Folder:", field_x, y, COLOR_TEXT_DIM);
+    y += 25;
+    draw_rect(ui->screen, field_x, y, field_w, 40,
+              ui->sync_input_field == 0 ? COLOR_ITEM_SEL : COLOR_ITEM_BG);
+    draw_text(ui->screen, ui->font, ui->sync_config.watch_folder, field_x + 10, y + 8, COLOR_TEXT);
+    y += 60;
+
+    // Remote destination field
+    draw_text(ui->screen, ui->font_small, "Remote Destination:", field_x, y, COLOR_TEXT_DIM);
+    y += 25;
+    draw_rect(ui->screen, field_x, y, field_w, 40,
+              ui->sync_input_field == 1 ? COLOR_ITEM_SEL : COLOR_ITEM_BG);
+    draw_text(ui->screen, ui->font, ui->sync_config.remote_destination, field_x + 10, y + 8, COLOR_TEXT);
+    y += 60;
+
+    // Poll interval display
+    char interval[64];
+    snprintf(interval, sizeof(interval), "Poll Interval: %d seconds", ui->sync_config.poll_interval_sec);
+    draw_text(ui->screen, ui->font_small, interval, field_x, y, COLOR_TEXT_DIM);
+    y += 50;
+
+    // Action buttons
+    int btn_width = 200;
+    int btn_height = 50;
+    int btn_spacing = 20;
+    int btn_x = (SCREEN_WIDTH - (btn_width * 3 + btn_spacing * 2)) / 2;
+
+    // Start/Stop button
+    Uint32 start_color = ui->sync_status.running ? 0xF44336FF : 0x4CAF50FF;  // Red if running, Green if stopped
+    draw_rect(ui->screen, btn_x, y, btn_width, btn_height, start_color);
+    draw_text(ui->screen, ui->font,
+              ui->sync_status.running ? "Stop Sync" : "Start Sync",
+              btn_x + 40, y + 12, COLOR_TEXT);
+
+    // Sync Now button
+    btn_x += btn_width + btn_spacing;
+    draw_rect(ui->screen, btn_x, y, btn_width, btn_height, COLOR_ITEM_SEL);
+    draw_text(ui->screen, ui->font, "Sync Now", btn_x + 45, y + 12, COLOR_TEXT);
+
+    // Save Config button
+    btn_x += btn_width + btn_spacing;
+    draw_rect(ui->screen, btn_x, y, btn_width, btn_height, COLOR_ITEM_BG);
+    draw_text(ui->screen, ui->font, "Save", btn_x + 70, y + 12, COLOR_TEXT);
+
+    // Instructions
+    draw_text_centered(ui->screen, ui->font_small,
+                       "Tap field to edit. Service must be running to sync.",
+                       SCREEN_HEIGHT - 50, COLOR_TEXT_DIM);
+}
+
 void ui_render(UIState *ui) {
     switch (ui->state) {
         case SCREEN_LOGIN:
@@ -303,6 +401,9 @@ void ui_render(UIState *ui) {
             break;
         case SCREEN_LOCAL_BROWSER:
             render_local_browser(ui);
+            break;
+        case SCREEN_SYNC:
+            render_sync(ui);
             break;
         case SCREEN_LOADING:
             render_loading(ui);
@@ -398,6 +499,13 @@ int ui_handle_event(UIState *ui, SDL_Event *event, AppConfig *config) {
 
             // Check header buttons
             if (y < HEADER_HEIGHT) {
+                // Sync button
+                if (x >= SCREEN_WIDTH - 320 && x <= SCREEN_WIDTH - 240) {
+                    ui->touch_scrolling = 0;
+                    ui_refresh_sync_status(ui);
+                    ui->state = SCREEN_SYNC;
+                    return 0;
+                }
                 // Upload button
                 if (x >= SCREEN_WIDTH - 220 && x <= SCREEN_WIDTH - 140) {
                     ui->touch_scrolling = 0;
@@ -435,6 +543,55 @@ int ui_handle_event(UIState *ui, SDL_Event *event, AppConfig *config) {
                     ui->touch_scrolling = 0;
                     return 7; // Local file selected for upload
                 }
+            }
+        }
+        else if (ui->state == SCREEN_SYNC) {
+            int field_x = 20;
+            int field_w = SCREEN_WIDTH - 40;
+
+            // Back button
+            if (y < HEADER_HEIGHT && x >= SCREEN_WIDTH - 120) {
+                ui->touch_scrolling = 0;
+                ui->state = SCREEN_BROWSER;
+                PDL_SetKeyboardState(PDL_FALSE);
+                return 0;
+            }
+
+            // Watch folder field (y around 155)
+            if (y >= 130 && y <= 175) {
+                ui->sync_input_field = 0;
+                PDL_SetKeyboardState(PDL_TRUE);
+            }
+            // Remote destination field (y around 240)
+            else if (y >= 215 && y <= 260) {
+                ui->sync_input_field = 1;
+                PDL_SetKeyboardState(PDL_TRUE);
+            }
+            // Buttons row (y around 350)
+            else if (y >= 340 && y <= 400) {
+                PDL_SetKeyboardState(PDL_FALSE);
+                int btn_width = 200;
+                int btn_spacing = 20;
+                int btn_start = (SCREEN_WIDTH - (btn_width * 3 + btn_spacing * 2)) / 2;
+
+                // Start/Stop button
+                if (x >= btn_start && x <= btn_start + btn_width) {
+                    ui_toggle_sync(ui);
+                }
+                // Sync Now button
+                else if (x >= btn_start + btn_width + btn_spacing &&
+                         x <= btn_start + btn_width * 2 + btn_spacing) {
+                    ui_sync_now(ui);
+                }
+                // Save Config button
+                else if (x >= btn_start + (btn_width + btn_spacing) * 2 &&
+                         x <= btn_start + btn_width * 3 + btn_spacing * 2) {
+                    sync_service_update_config(&ui->sync_config);
+                    ui_refresh_sync_status(ui);
+                }
+            }
+            else {
+                PDL_SetKeyboardState(PDL_FALSE);
             }
         }
 
@@ -503,6 +660,37 @@ int ui_handle_event(UIState *ui, SDL_Event *event, AppConfig *config) {
             }
             else if (key == SDLK_BACKSPACE || key == SDLK_ESCAPE) {
                 return 3; // Go back
+            }
+        }
+        else if (ui->state == SCREEN_SYNC) {
+            char *target = NULL;
+            int max_len = 0;
+
+            switch (ui->sync_input_field) {
+                case 0: target = ui->sync_config.watch_folder; max_len = sizeof(ui->sync_config.watch_folder) - 1; break;
+                case 1: target = ui->sync_config.remote_destination; max_len = sizeof(ui->sync_config.remote_destination) - 1; break;
+            }
+
+            if (target) {
+                int len = strlen(target);
+                SDLKey key = event->key.keysym.sym;
+
+                if (key == SDLK_BACKSPACE && len > 0) {
+                    target[len - 1] = '\0';
+                }
+                else if (key == SDLK_RETURN || key == SDLK_TAB) {
+                    ui->sync_input_field = (ui->sync_input_field + 1) % 2;
+                }
+                else if (key == SDLK_ESCAPE) {
+                    PDL_SetKeyboardState(PDL_FALSE);
+                }
+                else {
+                    Uint16 unicode = event->key.keysym.unicode;
+                    if (unicode >= 32 && unicode < 127 && len < max_len) {
+                        target[len] = (char)unicode;
+                        target[len + 1] = '\0';
+                    }
+                }
             }
         }
     }
@@ -592,4 +780,50 @@ int ui_scan_local_directory(UIState *ui, const char *path) {
 
     closedir(dir);
     return 0;
+}
+
+void ui_refresh_sync_status(UIState *ui) {
+    // Check if sync service is available
+    ui->sync_service_available = sync_service_is_running();
+
+    if (ui->sync_service_available) {
+        sync_service_get_status(&ui->sync_status);
+        sync_service_get_config(&ui->sync_config);
+    } else {
+        // Set defaults if service not available
+        memset(&ui->sync_status, 0, sizeof(ui->sync_status));
+        if (ui->sync_config.watch_folder[0] == '\0') {
+            strcpy(ui->sync_config.watch_folder, "/media/internal/sync");
+        }
+        if (ui->sync_config.remote_destination[0] == '\0') {
+            strcpy(ui->sync_config.remote_destination, "/TouchPad-Backup");
+        }
+        if (ui->sync_config.poll_interval_sec == 0) {
+            ui->sync_config.poll_interval_sec = 300;
+        }
+    }
+}
+
+void ui_toggle_sync(UIState *ui) {
+    if (!ui->sync_service_available) return;
+
+    if (ui->sync_status.running) {
+        sync_service_stop();
+    } else {
+        sync_service_start();
+    }
+
+    // Refresh status after a brief delay
+    SDL_Delay(100);
+    ui_refresh_sync_status(ui);
+}
+
+void ui_sync_now(UIState *ui) {
+    if (!ui->sync_service_available) return;
+
+    sync_service_sync_now();
+
+    // Refresh status
+    SDL_Delay(100);
+    ui_refresh_sync_status(ui);
 }

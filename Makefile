@@ -23,7 +23,7 @@ LDFLAGS += -Wl,--allow-shlib-undefined
 LIBS = -lSDL -lSDL_ttf -lSDL_image -lpdl -lcurl -lssl -lcrypto
 
 # Source files
-SRC = src/main.c src/webdav.c src/ui.c src/config.c src/xml_parser.c
+SRC = src/main.c src/webdav.c src/ui.c src/config.c src/xml_parser.c src/http_client.c
 OBJ = $(SRC:.c=.o)
 
 # Output

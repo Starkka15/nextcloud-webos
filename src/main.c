@@ -7,8 +7,10 @@
 #include "config.h"
 #include "webdav.h"
 #include "ui.h"
+#include "http_client.h"
 
 #define CONFIG_FILE "/media/internal/appdata/org.webos.nextcloud/config.txt"
+#define SERVICE_PATH "/media/cryptofs/apps/usr/palm/applications/org.webos.nextcloud/services/org.webos.nextcloud.service"
 #define DOWNLOAD_DIR "/media/internal/downloads/"
 #define LOCAL_ROOT "/media/internal"
 
@@ -19,6 +21,35 @@ static UIState ui;
 static void ensure_config_dir(void) {
     // webOS doesn't have mkdir in PDK easily, we'll just try to save
     // The directory should exist if the app was installed properly
+}
+
+// Start the sync service if not already running
+static void start_sync_service(void) {
+    // Check if service is already running
+    if (sync_service_is_running()) {
+        printf("Sync service already running\n");
+        return;
+    }
+
+    printf("Starting sync service...\n");
+
+    // Start the Node.js service in the background
+    // Use absolute path since PATH may not be set when launched from GUI
+    char cmd[512];
+    snprintf(cmd, sizeof(cmd),
+        "cd %s && nohup /bin/node main.js >> /tmp/nextcloud-sync.log 2>&1 &",
+        SERVICE_PATH);
+
+    system(cmd);
+
+    // Give the service a moment to start
+    SDL_Delay(500);
+
+    if (sync_service_is_running()) {
+        printf("Sync service started successfully\n");
+    } else {
+        printf("Failed to start sync service\n");
+    }
 }
 
 // Navigate to a directory
@@ -179,6 +210,16 @@ static void attempt_connect(void) {
         ensure_config_dir();
         config_save(&config, CONFIG_FILE);
 
+        // Update sync service with the same credentials
+        if (sync_service_is_running()) {
+            SyncConfig sync_cfg;
+            sync_service_get_config(&sync_cfg);
+            strncpy(sync_cfg.server_url, config.server_url, sizeof(sync_cfg.server_url) - 1);
+            strncpy(sync_cfg.username, config.username, sizeof(sync_cfg.username) - 1);
+            strncpy(sync_cfg.password, config.password, sizeof(sync_cfg.password) - 1);
+            sync_service_update_config(&sync_cfg);
+        }
+
         // Navigate to root
         navigate_to("/");
     } else {
@@ -226,6 +267,9 @@ int main(int argc, char *argv[]) {
     if (config.remember_password) {
         strncpy(ui.input_password, config.password, sizeof(ui.input_password) - 1);
     }
+
+    // Start the sync service
+    start_sync_service();
 
     // Main loop
     int running = 1;

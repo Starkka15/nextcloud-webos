@@ -5,6 +5,7 @@
 #include <SDL_ttf.h>
 #include "xml_parser.h"
 #include "config.h"
+#include "http_client.h"
 
 // Screen dimensions (TouchPad)
 #define SCREEN_WIDTH 1024
@@ -31,6 +32,7 @@ typedef enum {
     SCREEN_LOGIN,
     SCREEN_BROWSER,
     SCREEN_LOCAL_BROWSER,  // For selecting local files to upload
+    SCREEN_SYNC,           // Sync settings screen
     SCREEN_LOADING,
     SCREEN_ERROR
 } ScreenState;
@@ -69,6 +71,12 @@ typedef struct {
     int local_selected;
     int local_scroll_offset;
     char local_path[1024];
+
+    // Sync settings
+    SyncStatus sync_status;
+    SyncConfig sync_config;
+    int sync_input_field;  // 0=watch_folder, 1=remote_dest
+    int sync_service_available;
 } UIState;
 
 // Initialize UI subsystem
@@ -100,5 +108,10 @@ FileEntry *ui_get_local_selected(UIState *ui);
 
 // Scan local directory for upload selection
 int ui_scan_local_directory(UIState *ui, const char *path);
+
+// Sync settings functions
+void ui_refresh_sync_status(UIState *ui);
+void ui_toggle_sync(UIState *ui);
+void ui_sync_now(UIState *ui);
 
 #endif /* UI_H */

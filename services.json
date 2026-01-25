@@ -1,0 +1,11 @@
+{
+    "id": "org.webos.nextcloud.service",
+    "description": "Nextcloud Sync Service",
+    "services": [{
+        "name": "org.webos.nextcloud.service",
+        "assistant": "node",
+        "assistantConfig": {
+            "type": "node"
+        }
+    }]
+}
