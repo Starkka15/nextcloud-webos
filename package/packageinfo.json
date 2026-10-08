@@ -1,0 +1,9 @@
+{
+	"app": "com.stark.nextcloud",
+	"id": "com.stark.nextcloud",
+	"loc_name": "Nextcloud",
+	"package_format_version": 2,
+	"services": ["com.stark.nextcloud.service"],
+	"vendor": "stark",
+	"version": "0.1.0"
+}

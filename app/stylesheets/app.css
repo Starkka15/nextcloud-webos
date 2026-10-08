@@ -1,0 +1,197 @@
+/* Nextcloud for webOS. The stock Enyo theme is light; this adds the header,
+   the file rows and the sign-in box. */
+
+.nc-app, .nc-view {
+	background: #f4f5f7;
+	color: #222b36;
+}
+
+/* ---- sign-in ---- */
+
+.nc-login-box {
+	max-width: 520px;
+	margin: 40px auto;
+	padding: 0 16px;
+}
+
+.nc-brand {
+	font-size: 34px;
+	font-weight: bold;
+	color: #0082c9;
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.nc-message {
+	margin: 14px 4px 0;
+	min-height: 22px;
+	color: #b3261e;
+	text-align: center;
+}
+
+.nc-login-note {
+	margin: 18px 4px;
+	font-size: 14px;
+	color: #6b7785;
+	text-align: center;
+}
+
+/* ---- header ---- */
+
+.nc-header {
+	background: #0082c9;
+	color: #fff;
+	padding: 6px 8px;
+	min-height: 54px;
+}
+
+.nc-titles {
+	padding: 0 10px;
+	overflow: hidden;
+}
+
+.nc-title {
+	font-size: 21px;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.nc-subtitle {
+	font-size: 13px;
+	opacity: 0.8;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.nc-header-button {
+	margin: 0 3px;
+}
+
+/* ---- file list ---- */
+
+.nc-note {
+	padding: 18px;
+	text-align: center;
+	color: #6b7785;
+}
+
+.nc-row {
+	background: #fff;
+	padding: 8px 10px;
+}
+
+.nc-row-text {
+	padding: 0 12px;
+	overflow: hidden;
+}
+
+.nc-name {
+	font-size: 18px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.nc-info {
+	font-size: 13px;
+	color: #6b7785;
+}
+
+.nc-more {
+	margin: 0;
+}
+
+/* A file is a page with its extension written on it; a folder is a tabbed block. */
+.nc-icon {
+	width: 40px;
+	height: 46px;
+	line-height: 58px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+	color: #fff;
+	border-radius: 4px;
+	background: #8a96a3;
+	overflow: hidden;
+}
+
+.nc-icon-image { background: #2e9d5b; }
+.nc-icon-video { background: #c2473d; }
+.nc-icon-audio { background: #8455b8; }
+
+.nc-icon-folder {
+	width: 46px;
+	height: 34px;
+	margin: 9px -3px 3px -3px;
+	background: #0082c9;
+	border-radius: 2px 5px 5px 5px;
+	position: relative;
+	overflow: visible;
+}
+
+.nc-icon-folder:before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: -6px;
+	width: 20px;
+	height: 7px;
+	background: #0082c9;
+	border-radius: 4px 4px 0 0;
+}
+
+/* ---- transfers bar ---- */
+
+.nc-bar {
+	background: #222b36;
+	color: #fff;
+	padding: 6px 10px;
+}
+
+.nc-bar-problem {
+	background: #8c2a23;
+}
+
+.nc-bar-text {
+	padding-right: 10px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* ---- dialogs ---- */
+
+.nc-dialog-note {
+	margin: 8px 2px 12px;
+	font-size: 15px;
+	min-height: 18px;
+}
+
+/* ---- auto-upload settings ---- */
+
+.nc-settings-box {
+	max-width: 620px;
+	margin: 20px auto;
+	padding: 0 16px;
+}
+
+.nc-settings-status {
+	margin: 14px 4px;
+	min-height: 22px;
+	text-align: center;
+	color: #6b7785;
+}
+
+/* A picture's or video's preview, in place of the page icon. */
+.nc-icon-thumb {
+	width: 46px;
+	height: 46px;
+	margin: 0 -3px;
+	background-color: #dfe3e8;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}

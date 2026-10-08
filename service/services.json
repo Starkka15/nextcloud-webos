@@ -1,0 +1,22 @@
+{
+	"id": "com.stark.nextcloud.service",
+	"description": "Downloads and uploads files for the Nextcloud app",
+	"engine": "node",
+	"activityTimeout": 120,
+	"services": [
+		{
+			"name": "com.stark.nextcloud.service",
+			"globalized": false,
+			"commands": [
+				{ "name": "start", "assistant": "startAssistant", "public": true },
+				{ "name": "status", "assistant": "statusAssistant", "public": true },
+				{ "name": "cancel", "assistant": "cancelAssistant", "public": true },
+				{ "name": "wait", "assistant": "waitAssistant", "public": true },
+				{ "name": "sync", "assistant": "syncAssistant", "public": true },
+				{ "name": "syncStatus", "assistant": "syncStatusAssistant", "public": true },
+				{ "name": "syncOff", "assistant": "syncOffAssistant", "public": true },
+				{ "name": "thumbs", "assistant": "thumbsAssistant", "public": true }
+			]
+		}
+	]
+}

@@ -1,0 +1,9 @@
+enyo.depends(
+	"stylesheets/app.css",
+	"source/Api.js",
+	"source/Transfers.js",
+	"source/LoginView.js",
+	"source/FilesView.js",
+	"source/AutoUploadView.js",
+	"source/App.js"
+);

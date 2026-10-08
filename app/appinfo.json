@@ -1,0 +1,11 @@
+{
+	"id": "com.stark.nextcloud",
+	"version": "0.1.0",
+	"vendor": "stark",
+	"type": "web",
+	"main": "index.html",
+	"title": "Nextcloud",
+	"icon": "images/icon.png",
+	"uiRevision": 2,
+	"keywords": ["Nextcloud", "Files", "Cloud"]
+}

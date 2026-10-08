@@ -1,14 +1,9 @@
-# Build artifacts
-*.o
+# Build output
+build/
 *.ipk
-nextcloud-webos
 
 # Editor files
 *.swp
 *~
 .vscode/
 .idea/
-
-# OS files
-.DS_Store
-Thumbs.db
